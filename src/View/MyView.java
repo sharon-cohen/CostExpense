@@ -1,6 +1,6 @@
 /*
  * This class implements View model and handles the frontline interface with User.
- * 
+ *
  * It sends and receives data using ViewModel Class and updates itself.
  */
 
@@ -53,7 +53,6 @@ import javax.swing.JTable;
 import javax.swing.JScrollPane;
 
 public class MyView implements View {
-
 	private JFrame f;
 	private JTabbedPane tabbedPane;
 	private JPanel cost;
@@ -99,13 +98,17 @@ public class MyView implements View {
 	private JScrollPane scrollPane;
 	private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 	private JFreeChart pieChart;
-	private String[][] data;
+
 	private ChartPanel chart;
 	private DefaultTableModel model;
 	private PieDataset dataset;
+	private String [][] dataCost;
+	private Vector<Object> itemsObject;
+	private boolean resultButtomAction;
+	public MyView(MyViewModel vm) {
 
-	public MyView() {
-
+		this.vmodel=vm;
+		this.vmodel.setView(this);
 		this.setF(new JFrame());
 		this.setTabbedPane(new JTabbedPane(JTabbedPane.TOP));
 		this.setCost(new JPanel());
@@ -135,7 +138,6 @@ public class MyView implements View {
 		this.setSaveCurrency(new JButton("Save"));
 		this.setSaveCurrency(new JButton("Save"));
 		this.setReport(new JPanel());
-		this.setVmodel(new MyViewModel());
 		this.setPie(new JPanel());
 		this.setLblNewLabel(new JLabel("Welcome to Cost management App"));
 		this.setEditCurrencyNameField(new JTextField());
@@ -628,6 +630,8 @@ public class MyView implements View {
 		searchBtn.setBounds(326, 10, 60, 23);
 		searchBtn.addActionListener(new ActionListener() {
 
+
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 
@@ -644,7 +648,8 @@ public class MyView implements View {
 
 						model.fireTableDataChanged();
 						model.setRowCount(0);
-						String[][] data = getTableData(fromDate, toDate);
+						vmodel.getTableData(fromDate, toDate);
+						String[][] data =dataCost;
 						for (int i = 0; i < data.length; i++) {
 							model.addRow(data[i]);
 						}
@@ -726,8 +731,8 @@ public class MyView implements View {
 
 	private PieDataset getDataSet(JDateChooser fromDate, JDateChooser toDate) {
 		DefaultPieDataset dataset = new DefaultPieDataset();
-
-		data = getTableData(fromDate, toDate);
+		 vmodel.getTableData(fromDate, toDate);
+		 String [][]data=dataCost;
 
 		if (data == null || data.length == 0) {
 			dataset.setValue("No Cost Entry", 100);
@@ -837,8 +842,8 @@ public class MyView implements View {
 		for (int i = 0; i < cols.length; i++) {
 			model.addColumn(cols[i]);
 		}
-
-		data = getTableData(null, null);
+		vmodel.getTableData(null, null);
+		String [][]data = dataCost;
 
 		if (!(data == null)) {
 			for (int i = 0; i < data.length; i++) {
@@ -853,58 +858,7 @@ public class MyView implements View {
 
 	}
 
-	@Override
-	public String[][] getTableData(JDateChooser fromDate, JDateChooser toDate) {
 
-		String query = "SELECT * from COSTTABLE";
-
-		String[][] data = null;
-
-		try (ResultSet result = vmodel.getTableData(query);) {
-
-			result.last();
-			int size = result.getRow();
-			result.beforeFirst();
-
-			if (size == 0) {
-
-				return null;
-			}
-			data = new String[size][4];
-			String pattern = "yyyy-MM-dd";
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
-
-			int row = 0;
-			while (result.next()) {
-				MyCost cost = (MyCost) result.getObject(1);
-
-				if (!(fromDate == null) && !(toDate == null)) {
-					if ((cost.getDate().after(fromDate.getDate()) || cost.getDate().equals(fromDate.getDate()))
-							&& (cost.getDate().before(toDate.getDate()) || cost.getDate().equals(toDate.getDate()))) {
-						data[row][0] = String.valueOf(cost.getValue());
-						data[row][1] = cost.getCategory();
-						data[row][2] = simpleDateFormat.format(cost.getDate());
-						data[row][3] = ((MyCurrency) cost.getCurrency()).toString();
-						row++;
-					}
-				}
-
-				else {
-					data[row][0] = String.valueOf(cost.getValue());
-					data[row][1] = cost.getCategory();
-					data[row][2] = simpleDateFormat.format(cost.getDate());
-					data[row][3] = ((MyCurrency) cost.getCurrency()).toString();
-					row++;
-				}
-
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return data;
-	}
 
 	public void fillDropDowns(boolean isFirstSetup) {
 
@@ -923,23 +877,25 @@ public class MyView implements View {
 			categoryList.setSelectedIndex(0);
 
 		}
-
-		Vector<Object> items = vmodel.getComboList("currency");
+		vmodel.getComboList("currency");
+		Vector<Object> items  =itemsObject;
 
 		for (Object s : items) {
-				currencyList.addItem(((MyCurrency) s).toString());
-				chooseCurrency.addItem(((MyCurrency) s).toString());
+			currencyList.addItem(((MyCurrency) s).toString());
+			chooseCurrency.addItem(((MyCurrency) s).toString());
 
-			
+
 		}
 
-		items = vmodel.getComboList("category");
+		vmodel.getComboList("category");
+		items  =itemsObject;
+
 
 		for (Object s : items) {
-				categoryList.addItem((String) s);
-				chooseCategory.addItem((String) s);
+			categoryList.addItem((String) s);
+			chooseCategory.addItem((String) s);
 
-			
+
 		}
 
 	}
@@ -1547,7 +1503,7 @@ public class MyView implements View {
 					if ((!this.editCurrencyNameField.getText().trim().equals(currency[0].trim())
 							&& !this.editCurrencyNameField.getText().isBlank())
 							|| (!this.editCurrencySymbolField.getText().trim().equals(currency[1].trim())
-									&& !this.editCurrencySymbolField.getText().isBlank())) {
+							&& !this.editCurrencySymbolField.getText().isBlank())) {
 						query = this.editCurrencyNameField.getText().trim() + " - "
 								+ this.editCurrencySymbolField.getText().trim() + " | " + currency[0].trim() + " - "
 								+ currency[1].trim();
@@ -1565,10 +1521,14 @@ public class MyView implements View {
 
 			boolean result = false;
 			if (message != "no") {
-				result = vmodel.getButtonAction(type, query, obj);
-			}
 
-			if (result) {
+				vmodel.getButtonAction(type, query, obj);
+
+			}
+			System.out.println("sharonnnnnnnnnnnnnnnnnnnn");
+
+			System.out.println(resultButtomAction);
+			if (resultButtomAction) {
 
 				JOptionPane.showMessageDialog(f, message, "Confirmation", JOptionPane.INFORMATION_MESSAGE);
 
@@ -1606,7 +1566,21 @@ public class MyView implements View {
 
 		return new MyCurrency(set[0], set[1]);
 	}
+	@Override
+	public void updateData(String [][] data){
+		dataCost=data;
+	}
+	@Override
+	public void updateObject(Vector<Object> item){
+		itemsObject=item;
+	}
+	@Override
+	public void updateresultButtomAction(boolean res){
 
+		this.resultButtomAction=res;
+
+
+	}
 	@Override
 	public void updateComboBox(String comboBox, String value, String ops) {
 
@@ -1678,7 +1652,7 @@ public class MyView implements View {
 			}
 
 		}
-		
+
 		this.saveCategory.setEnabled(false);
 		this.saveCurrency.setEnabled(false);
 		this.saveNewCategory.setEnabled(false);

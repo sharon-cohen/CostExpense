@@ -21,6 +21,7 @@ import Model.Model;
 import Model.MyModel;
 import View.MyView;
 import View.View;
+import com.toedter.calendar.JDateChooser;
 
 public class MyViewModel implements ViewModel {
 	
@@ -28,15 +29,15 @@ public class MyViewModel implements ViewModel {
 	public View view;
 	private static Vector<Object> list;
 	
-	public MyViewModel()  {
-	this.setModel(new MyModel());
+	public MyViewModel(MyModel mod)  {
+		model=mod;
 	}
 
-	public Vector<Object> getComboList(String type) {
+	public void getComboList(String type) {
 		
 		if(type.equals(null))
 		{
-			return null;
+			view.updateObject(null);
 		}		
 		
 		list = new Vector<>();
@@ -60,10 +61,11 @@ public class MyViewModel implements ViewModel {
 						e.printStackTrace();
 					}
 					
-		return list;
+		view.updateObject(list);
+
 	}
 
-	public boolean getButtonAction(int type, String query, Object obj) {
+	public void getButtonAction(int type, String query, Object obj) {
 		//Acts when a button is pressed
 		
 		System.out.println("Type is "+type);
@@ -71,19 +73,23 @@ public class MyViewModel implements ViewModel {
 		
 		if(type==1)
 		{
-			return ((MyModel) model).exeObjectQuery(query,obj);
+			boolean r=((MyModel) model).exeObjectQuery(query,obj);
+			view.updateresultButtomAction(r);
+			return;
 		}
 		if (type==2 || type ==3)
 		{
-			return model.updateQuery(query);
+			view.updateresultButtomAction(model.updateQuery(query));
+			return;
 		}
-		
-		return false;
+
+		view.updateresultButtomAction(false);
+		return;
 	}
 
-	public ResultSet getTableData(String query) {
+	public void getTableData(JDateChooser fromDate, JDateChooser toDate) {
 		// TODO Auto-generated method stub
-		return model.tableData(query);
+		view.updateData( model.getTableDataModel(fromDate,toDate));
 	}
 
 	@Override
@@ -92,11 +98,7 @@ public class MyViewModel implements ViewModel {
 		
 	}
 
-	@Override
-	public boolean getButtonAction(int type, String query) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+
 
 	@Override
 	public void setView(View view) {

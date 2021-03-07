@@ -12,14 +12,15 @@ public class CostTrackingApp {
 		
 		
 		//Creating instances
-		MyViewModel vm = new MyViewModel();
 		MyModel mod = new MyModel();
-		MyView view = new MyView();
+		MyViewModel vm = new MyViewModel(mod);
+
+		MyView view = new MyView(vm);
 		
 		//Binding Components
-		vm.setView(view);
-		vm.setModel(mod);
-		view.setVmodel(vm);
+//		vm.setView(view);
+//		vm.setModel(mod);
+//		view.setVmodel(vm);
 		
 		
 		

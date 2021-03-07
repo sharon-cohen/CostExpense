@@ -4,18 +4,17 @@ import java.util.Vector;
 
 import Model.Model;
 import View.View;
+import com.toedter.calendar.JDateChooser;
 
 public interface ViewModel {
 	
-	public Vector<Object> getComboList(String type);
+	public void getComboList(String type);
 
-	public boolean getButtonAction(int type, String query, Object obj);
+	public void getButtonAction(int type, String query, Object obj);
 
-	public ResultSet getTableData(String query);
+	public void getTableData(JDateChooser fromDate, JDateChooser toDate);
 
 	public void startInitialData();
-
-	boolean getButtonAction(int type, String query);
 
 	public void setView(View view);
 
