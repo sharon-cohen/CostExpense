@@ -3,6 +3,7 @@
  *
  * It sends and receives data using ViewModel Class and updates itself.
  */
+//Sharon Cohen 208463463, Dana Daniella Aloni 207907742
 
 package View;
 

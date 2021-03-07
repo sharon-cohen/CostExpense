@@ -1,3 +1,5 @@
+//Sharon Cohen 208463463, Dana Daniella Aloni 207907742
+
 /*
  * This MyModel class implements Model interface and acts as an intermediately
  * between Database Connection & ViewModel

@@ -1,3 +1,5 @@
+//Sharon Cohen 208463463, Dana Daniella Aloni 207907742
+
 package ViewModel;
 import java.sql.ResultSet;
 import java.util.Vector;
